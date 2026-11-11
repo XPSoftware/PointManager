@@ -1,0 +1,129 @@
+<Window x:Class="PointManager.Views.Controls.TotalCheckDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:conv="clr-namespace:PointManager.Converters"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        TextElement.FontSize="14">
+
+    <Window.Resources>
+        <conv:DeltaToBrushConverter x:Key="DeltaBrush" />
+        <conv:SignedIntConverter x:Key="SignedInt" />
+    </Window.Resources>
+
+    <materialDesign:Card Width="540" Margin="24" Padding="24" UniformCornerRadius="8"
+                         materialDesign:ElevationAssist.Elevation="Dp8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="ClipboardCheckOutline"
+                                         Width="28" Height="28" VerticalAlignment="Center"
+                                         Foreground="{DynamicResource PrimaryHueMidBrush}" />
+                <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Text="总分校验"
+                           Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
+            </StackPanel>
+
+            <TextBlock x:Name="SummaryText" Grid.Row="1" Margin="0,16,0,0" TextWrapping="Wrap"
+                       Style="{StaticResource MaterialDesignBody1TextBlock}" />
+
+            <StackPanel x:Name="OrphanNote" Grid.Row="2" Margin="0,10,0,0"
+                        Orientation="Horizontal" Visibility="Collapsed">
+                <materialDesign:PackIcon Kind="AlertCircleOutline" Width="18" Height="18"
+                                         VerticalAlignment="Center"
+                                         Foreground="{DynamicResource SecondaryHueMidBrush}" />
+                <TextBlock x:Name="OrphanNoteText" Margin="8,0,0,0" VerticalAlignment="Center"
+                           TextWrapping="Wrap" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+            </StackPanel>
+
+            <!-- Column header, widths mirrored by the item template below -->
+            <Grid Grid.Row="3" Margin="0,16,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="姓名" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                <TextBlock Grid.Column="1" Text="小组" Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                <TextBlock Grid.Column="2" Text="当前总分" HorizontalAlignment="Right"
+                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                <TextBlock Grid.Column="3" Text="记录合计" HorizontalAlignment="Right"
+                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                <TextBlock Grid.Column="4" Text="差异" HorizontalAlignment="Right"
+                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
+            </Grid>
+
+            <ListView x:Name="MismatchList" Grid.Row="4" MaxHeight="300"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignDivider}"
+                      Padding="8,4">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="2,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="70" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="1" Text="{Binding GroupName}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Current}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="{Binding FromHistory}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       FontWeight="Bold"
+                                       Text="{Binding Difference, Converter={StaticResource SignedInt}}"
+                                       Foreground="{Binding Difference, Converter={StaticResource DeltaBrush}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <TextBlock x:Name="CaptionText" Grid.Row="5" Margin="0,12,0,0" TextWrapping="Wrap"
+                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+
+            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right"
+                        Margin="0,20,0,0">
+                <Button x:Name="FixButton" Content="按历史记录修正" IsDefault="True"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Click="Fix_Click" />
+                <Button Content="关闭" Margin="8,0,0,0" IsCancel="True"
+                        Style="{StaticResource MaterialDesignFlatButton}" Click="Close_Click" />
+            </StackPanel>
+        </Grid>
+    </materialDesign:Card>
+</Window>

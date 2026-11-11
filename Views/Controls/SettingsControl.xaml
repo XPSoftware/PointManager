@@ -1,0 +1,80 @@
+<UserControl x:Class="PointManager.Views.Controls.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:controls="clr-namespace:PointManager.Views.Controls"
+             Foreground="{DynamicResource MaterialDesignBody}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!-- Default switcher shown when no custom Switcher is provided. -->
+        <ToggleButton x:Key="DefaultSwitch"
+                      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                      IsChecked="{Binding IsOn, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}" />
+
+        <Style TargetType="TextBlock" x:Key="HeaderTextBlockStyle">
+            <Setter Property="FontSize" Value="14" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}"
+                             Value="True">
+                    <Setter Property="FontSize" Value="13" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="DescriptionTextBlockStyle">
+            <Setter Property="FontSize" Value="12" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}"
+                             Value="True">
+                    <Setter Property="FontSize" Value="10" />
+                </DataTrigger>
+                <!-- Collapse the description line entirely when there is no text. -->
+                <DataTrigger Binding="{Binding Description, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}"
+                             Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- icon -->
+        <materialDesign:PackIcon Grid.Column="0" Margin="0,0,6,0" VerticalAlignment="Center"
+                                 Height="18" Width="18"
+                                 Kind="{Binding IconGlyph, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}" />
+
+        <!-- text -->
+        <StackPanel VerticalAlignment="Center" Grid.Column="1">
+            <TextBlock TextWrapping="Wrap"
+                       Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}"
+                       Style="{StaticResource HeaderTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap" Margin="0,1,0,0" Opacity="0.75"
+                       Style="{StaticResource DescriptionTextBlockStyle}"
+                       Text="{Binding Description, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}" />
+        </StackPanel>
+
+        <!-- switcher -->
+        <ContentPresenter Grid.Column="2" Margin="6,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                          Visibility="{Binding HasSwitcher, Converter={StaticResource BoolToVis}, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}">
+            <ContentPresenter.Style>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Content"
+                            Value="{Binding Switcher, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Switcher, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:SettingsControl}}}"
+                                     Value="{x:Null}">
+                            <Setter Property="Content" Value="{StaticResource DefaultSwitch}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentPresenter.Style>
+        </ContentPresenter>
+    </Grid>
+</UserControl>
