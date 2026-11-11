@@ -4,6 +4,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:views="clr-namespace:PointManager.Views"
         xmlns:controls="clr-namespace:PointManager.Views.Controls"
+        xmlns:local="clr-namespace:PointManager"
         Title="设置" Height="560" Width="780"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource PointManagerWindow}"
@@ -96,6 +97,21 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- About page: full-width flat link rows, ClassIsland-style -->
+        <Style x:Key="AboutLinkButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+            <Setter Property="materialDesign:RippleAssist.Feedback" Value="{DynamicResource MaterialDesignBody}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="24,0" />
+            <Setter Property="TextElement.FontSize" Value="14" />
+        </Style>
+        <Style x:Key="AboutLinkGroup" TargetType="StackPanel">
+            <Style.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource AboutLinkButton}" />
+            </Style.Resources>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -148,6 +164,12 @@
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DatabaseOutline" Width="18" Height="18" VerticalAlignment="Center" />
                             <TextBlock Text="存储" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="TabAbout" Style="{StaticResource SideTab}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" VerticalAlignment="Center" />
+                            <TextBlock Text="关于" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                 </StackPanel>
@@ -386,6 +408,98 @@
                                         Foreground="#E53935" BorderBrush="#E53935" Click="ResetPoints_Click" />
                             </controls:SettingsCard.Switcher>
                         </controls:SettingsCard>
+                    </StackPanel>
+
+                    <!-- ===== 关于 ===== -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabAbout, Converter={StaticResource BoolToVis}}">
+                        <!-- Banner + 名称 / 版本 / 版权 -->
+                        <materialDesign:Card Margin="5" ClipContent="True" UniformCornerRadius="8">
+                            <StackPanel>
+                                <Border Height="120" Background="{DynamicResource PrimaryHueMidBrush}">
+                                    <Image x:Name="AboutIcon" Width="64" Height="64"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                </Border>
+                                <StackPanel Margin="24,14,24,16">
+                                    <TextBlock>
+                                        <Run Text="PointManager" FontSize="24" FontWeight="Medium" />
+                                        <Run Text=" " />
+                                        <Run Text="{x:Static local:App.AppVersion}" FontSize="16" />
+                                    </TextBlock>
+                                    <TextBlock Margin="0,4,0,0" Text="Copyright © 2026 XPSoftware"
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                                    <TextBlock Margin="0,8,0,0" Text="一款轻量的本地学生积分管理工具。"
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- 项目链接 -->
+                        <materialDesign:Card Margin="5,12,5,0" ClipContent="True" UniformCornerRadius="8">
+                            <StackPanel Style="{StaticResource AboutLinkGroup}">
+                                <Button Tag="https://github.com/XPSoftware/PointManager" Click="AboutLink_Click">
+                                    <Grid>
+                                        <TextBlock Text="GitHub 仓库" VerticalAlignment="Center" />
+                                        <materialDesign:PackIcon Kind="ExternalLink" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <Separator Margin="0,-0.5" Opacity="0.5" />
+                                <Button Tag="https://github.com/XPSoftware/PointManager/issues" Click="AboutLink_Click">
+                                    <Grid>
+                                        <TextBlock Text="问题反馈 / 功能建议" VerticalAlignment="Center" />
+                                        <materialDesign:PackIcon Kind="ExternalLink" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- 诊断 -->
+                        <materialDesign:Card Margin="5,12,5,0" ClipContent="True" UniformCornerRadius="8">
+                            <StackPanel Style="{StaticResource AboutLinkGroup}">
+                                <Button Click="AboutDiagnostics_Click">
+                                    <Grid>
+                                        <TextBlock Text="查看诊断信息" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- 鸣谢 -->
+                        <materialDesign:Card Margin="5,12,5,0" ClipContent="True" UniformCornerRadius="8">
+                            <StackPanel Style="{StaticResource AboutLinkGroup}">
+                                <TextBlock Text="鸣谢" FontWeight="Bold" Margin="24,12,24,6" />
+                                <Button Click="AboutLibraries_Click">
+                                    <Grid>
+                                        <TextBlock Text="第三方库" VerticalAlignment="Center" />
+                                        <materialDesign:PackIcon Kind="PackageVariant" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <TextBlock LineHeight="26" Margin="24,12,24,16" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}">
+                                    界面主题与部分控件使用了 MaterialDesignInXamlToolkit 框架。<LineBreak />
+                                    托盘图标能力由 Hardcodet.NotifyIcon.Wpf 提供。<LineBreak />
+                                    MVVM 基础设施使用了 CommunityToolkit.Mvvm。<LineBreak />
+                                    <!--感谢所有使用本工具并提出建议的老师与同学。-->
+                                </TextBlock>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- 许可与隐私 -->
+                        <materialDesign:Card Margin="5,12,5,5" ClipContent="True" UniformCornerRadius="8">
+                            <StackPanel Style="{StaticResource AboutLinkGroup}">
+                                <Button Click="AboutLicense_Click">
+                                    <Grid>
+                                        <TextBlock Text="查看开放源代码许可" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                                <Separator Margin="0,-0.5" Opacity="0.5" />
+                                <Button Click="AboutPrivacy_Click">
+                                    <Grid>
+                                        <TextBlock Text="隐私说明" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Button>
+                            </StackPanel>
+                        </materialDesign:Card>
                     </StackPanel>
 
                 </Grid>

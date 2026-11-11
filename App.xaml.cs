@@ -16,6 +16,10 @@ public partial class App : Application
     /// <summary>When true, windows close for real instead of hiding.</summary>
     public static bool IsShuttingDown { get; private set; }
 
+    /// <summary>Assembly version shown on the 关于 page, e.g. "1.0.0.0".</summary>
+    public static string AppVersion =>
+        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+
     private TaskbarIcon? _trayIcon;
 
     private StudentGroupEditorWindow? _editor;
@@ -93,7 +97,7 @@ public partial class App : Application
     {
         _trayIcon = new TaskbarIcon
         {
-            IconSource = new BitmapImage(new Uri("pack://application:,,,/Assets/app.ico")),
+            IconSource = new BitmapImage(new Uri("pack://application:,,,/PointManager;component/Assets/app.ico")),
             ToolTipText = "PointManager - 学生积分管理",
             ContextMenu = BuildTrayMenu(),
             MenuActivation = PopupActivationMode.RightClick,

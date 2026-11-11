@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>PointManager</RootNamespace>
     <AssemblyName>PointManager</AssemblyName>
+    <Version>1.0.0.0</Version>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
