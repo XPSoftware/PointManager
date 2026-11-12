@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Interop;
 using MaterialDesignThemes.Wpf;
 using PointManager.Models;
 using PointManager.Services;
@@ -40,8 +41,17 @@ public partial class TotalCheckDialog : Window
         if (!ok) return;
 
         Store.Instance.ApplyVerifiedTotals(_result.Mismatches);
-        DialogResult = true;
+        EndDialog(true);
     }
 
-    private void Close_Click(object sender, RoutedEventArgs e) => DialogResult = false;
+    private void Close_Click(object sender, RoutedEventArgs e) => EndDialog(false);
+
+    // The startup auto-check shows this window non-modal; DialogResult only exists in a modal loop.
+    private void EndDialog(bool result)
+    {
+        if (ComponentDispatcher.IsThreadModal)
+            DialogResult = result;
+        else
+            Close();
+    }
 }

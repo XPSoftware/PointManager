@@ -56,6 +56,11 @@ public partial class App : Application
 
         if (!Store.Instance.Settings.StartMinimizedToTray)
             ShowScoreAdjust();
+
+        // Non-modal so a mismatch report never blocks the tray app at startup.
+        var startupCheck = Store.Instance.VerifyTotals();
+        if (startupCheck.Mismatches.Count > 0)
+            new TotalCheckDialog(startupCheck).Show();
     }
 
     /// <summary>

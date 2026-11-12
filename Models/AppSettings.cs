@@ -69,11 +69,12 @@ public partial class AppSettings : ObservableObject
         set => SetProperty(ref _defaultReason, value);
     }
 
-    private int _maxHistoryRecords = 500;
+    // 0 means unlimited; positive values cap the retained records (floor of 50).
+    private int _maxHistoryRecords;
     public int MaxHistoryRecords
     {
         get => _maxHistoryRecords;
-        set => SetProperty(ref _maxHistoryRecords, value);
+        set => SetProperty(ref _maxHistoryRecords, Math.Max(0, value));
     }
 
     // Recently picked colors as "#RRGGBB", most recent first; shared by both color pickers.

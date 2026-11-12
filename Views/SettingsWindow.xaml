@@ -341,7 +341,7 @@
                         </controls:SettingsCard>
 
                         <controls:SettingsCard Margin="5" IconGlyph="History" Header="历史记录上限"
-                                               Description="最多保留的积分记录条数。">
+                                               Description="最多保留的积分记录条数，设置为 0 则无上限。">
                             <controls:SettingsCard.Switcher>
                                 <TextBox Width="180" Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                          materialDesign:HintAssist.Hint="条数"

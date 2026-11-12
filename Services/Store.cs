@@ -274,6 +274,7 @@ public sealed class Store
 
     private void TrimHistory()
     {
+        if (Settings.MaxHistoryRecords <= 0) return;
         var max = Math.Max(50, Settings.MaxHistoryRecords);
         while (Records.Count > max)
             Records.RemoveAt(Records.Count - 1);
