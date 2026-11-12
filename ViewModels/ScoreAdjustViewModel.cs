@@ -96,7 +96,8 @@ public partial class ScoreAdjustViewModel : ObservableObject
         _selectedIds.Clear();
         foreach (var s in Students.Where(s => s.IsSelected)) _selectedIds.Add(s.Student.Id);
 
-        IEnumerable<Student> query = _store.Students;
+        // Archived students are immutable, so they cannot receive points either.
+        IEnumerable<Student> query = _store.Students.Where(s => !s.IsArchived);
         var filter = SelectedGroupFilter;
         if (filter != null)
         {

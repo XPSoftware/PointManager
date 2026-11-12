@@ -36,8 +36,59 @@ public partial class Student : ObservableObject
     public string Name
     {
         get => _name;
-        set => SetProperty(ref _name, value);
+        set
+        {
+            if (SetProperty(ref _name, value))
+                OnPropertyChanged(nameof(AvatarInitial));
+        }
     }
+
+    /// <summary>学号：按列表顺序从 1 自动编号，只能通过调整顺序改变。</summary>
+    private int _number;
+    public int Number
+    {
+        get => _number;
+        set => SetProperty(ref _number, value);
+    }
+
+    private string _gender = string.Empty;
+    public string Gender
+    {
+        get => _gender;
+        set => SetProperty(ref _gender, value);
+    }
+
+    private string _remark = string.Empty;
+    public string Remark
+    {
+        get => _remark;
+        set => SetProperty(ref _remark, value);
+    }
+
+    /// <summary>相对数据根目录的头像文件路径；为空时显示姓名首字。</summary>
+    private string? _avatarPath;
+    public string? AvatarPath
+    {
+        get => _avatarPath;
+        set
+        {
+            if (SetProperty(ref _avatarPath, value))
+                OnPropertyChanged(nameof(HasCustomAvatar));
+        }
+    }
+
+    private bool _isArchived;
+    public bool IsArchived
+    {
+        get => _isArchived;
+        set => SetProperty(ref _isArchived, value);
+    }
+
+    [JsonIgnore]
+    public bool HasCustomAvatar => !string.IsNullOrWhiteSpace(AvatarPath);
+
+    [JsonIgnore]
+    public string AvatarInitial => string.IsNullOrWhiteSpace(Name) ? "?" : Name.Trim()[0].ToString();
 
     private Guid? _groupId;
     public Guid? GroupId

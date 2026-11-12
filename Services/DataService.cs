@@ -61,6 +61,7 @@ public static class DataService
     public const string SettingsFileName = "Settings.json";
     public const string ProfileFolderName = "Profile";
     public const string HistoryFolderName = "Histories";
+    public const string AvatarFolderName = "Avatars";
     public const string BackupFolderName = "Backup";
     public const string LegacyFileName = "data.json";
 
@@ -92,6 +93,8 @@ public static class DataService
 
     public static string HistoryDir => Path.Combine(RootDir, HistoryFolderName);
 
+    public static string AvatarDir => Path.Combine(RootDir, AvatarFolderName);
+
     public static string BackupDir => Path.Combine(RootDir, BackupFolderName);
 
     public static string LegacyFilePath => Path.Combine(RootDir, LegacyFileName);
@@ -106,6 +109,9 @@ public static class DataService
 
     public static string HistoryProfileDir(string? name) =>
         Path.Combine(HistoryDir, SanitizeName(name));
+
+    public static string AvatarProfileDir(string? name) =>
+        Path.Combine(AvatarDir, SanitizeName(name));
 
     public static string MonthKey(DateTime time) => time.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
@@ -370,6 +376,9 @@ public static class DataService
 
             var historyDir = HistoryProfileDir(name);
             if (Directory.Exists(historyDir)) Directory.Delete(historyDir, true);
+
+            var avatarDir = AvatarProfileDir(name);
+            if (Directory.Exists(avatarDir)) Directory.Delete(avatarDir, true);
             return true;
         }
         catch (Exception ex)
@@ -409,6 +418,20 @@ public static class DataService
             var sourceHistory = HistoryProfileDir(source);
             if (Directory.Exists(sourceHistory))
                 CopyDirectory(sourceHistory, HistoryProfileDir(created));
+
+            // Avatar paths embed the profile name; the copy must point at its own folder.
+            var sourceAvatars = AvatarProfileDir(source);
+            if (Directory.Exists(sourceAvatars))
+            {
+                CopyDirectory(sourceAvatars, AvatarProfileDir(created));
+                if (ReadJson<ProfileData>(ProfilePath(created)) is { } copied)
+                {
+                    foreach (var s in copied.Students)
+                        if (!string.IsNullOrWhiteSpace(s.AvatarPath))
+                            s.AvatarPath = Path.Combine(AvatarFolderName, created, Path.GetFileName(s.AvatarPath));
+                    WriteJson(ProfilePath(created), copied);
+                }
+            }
             return true;
         }
         catch (Exception ex)
@@ -606,7 +629,7 @@ public static class DataService
             File.Copy(source, Path.Combine(targetRoot, file), overwrite: true);
         }
 
-        foreach (var folder in new[] { ProfileFolderName, HistoryFolderName, BackupFolderName })
+        foreach (var folder in new[] { ProfileFolderName, HistoryFolderName, AvatarFolderName, BackupFolderName })
         {
             var sourceDir = Path.Combine(sourceRoot, folder);
             if (!Directory.Exists(sourceDir)) continue;
@@ -685,10 +708,10 @@ public static class DataService
             Groups = new List<Group> { g1, g2 },
             Students = new List<Student>
             {
-                new() { Name = "张三", GroupId = g1.Id, Points = 0 },
-                new() { Name = "李四", GroupId = g1.Id, Points = 0 },
-                new() { Name = "王五", GroupId = g2.Id, Points = 0 },
-                new() { Name = "赵六", GroupId = g2.Id, Points = 0 },
+                new() { Name = "张三", GroupId = g1.Id, Points = 0, Gender = "男", Remark = "班长" },
+                new() { Name = "李四", GroupId = g1.Id, Points = 0, Gender = "女" },
+                new() { Name = "王五", GroupId = g2.Id, Points = 0, Gender = "男" },
+                new() { Name = "赵六", GroupId = g2.Id, Points = 0, Gender = "女" },
             },
         };
     }

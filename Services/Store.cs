@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using PointManager.Models;
 using PointManager.Services;
@@ -40,6 +41,7 @@ public sealed class Store
         Settings = data.Settings ?? new AppSettings();
 
         ResolveLinks();
+        Renumber();
         TrimHistory();
         RecomputeCounts();
     }
@@ -89,6 +91,7 @@ public sealed class Store
             foreach (var r in DataService.LoadHistory(target)) Records.Add(r);
 
             ResolveLinks();
+            Renumber();
             TrimHistory();
             RecomputeCounts();
         }
@@ -120,6 +123,13 @@ public sealed class Store
             g.MemberCount = Students.Count(s => s.GroupId == g.Id);
     }
 
+    /// <summary>学号就是列表中的位置（从 1 起），任何增删或排序后都要重算。</summary>
+    private void Renumber()
+    {
+        for (var i = 0; i < Students.Count; i++)
+            Students[i].Number = i + 1;
+    }
+
     public Group? FindGroup(Guid? id) => id is { } g ? Groups.FirstOrDefault(x => x.Id == g) : null;
 
     public IEnumerable<Student> StudentsInGroup(Guid? groupId) =>
@@ -149,6 +159,7 @@ public sealed class Store
         var s = new Student { Name = name, GroupId = groupId };
         s.Group = FindGroup(groupId);
         Students.Add(s);
+        Renumber();
         NotifyChanged();
         return s;
     }
@@ -156,7 +167,79 @@ public sealed class Store
     public void RemoveStudent(Student s)
     {
         Students.Remove(s);
+        DeleteAvatarFile(s);
+        Renumber();
         NotifyChanged();
+    }
+
+    /// <summary>Creates one student per non-empty line; returns the added students.</summary>
+    public List<Student> ImportStudents(IEnumerable<string> names)
+    {
+        var added = new List<Student>();
+        foreach (var raw in names)
+        {
+            var name = raw.Trim();
+            if (name.Length == 0) continue;
+            var s = new Student { Name = name };
+            Students.Add(s);
+            added.Add(s);
+        }
+        if (added.Count > 0)
+        {
+            Renumber();
+            NotifyChanged();
+        }
+        return added;
+    }
+
+    /// <summary>Applies a new ordering of exactly the current students, then renumbers.</summary>
+    public void ReorderStudents(IReadOnlyList<Student> order)
+    {
+        if (order.Count != Students.Count) return;
+        for (var i = 0; i < order.Count; i++)
+        {
+            var current = Students.IndexOf(order[i]);
+            if (current < 0) return;
+            if (current != i) Students.Move(current, i);
+        }
+        Renumber();
+        NotifyChanged();
+    }
+
+    /// <summary>Copies an image into the active profile's avatar folder and points the student at it.</summary>
+    public void SetAvatar(Student s, string sourceFile)
+    {
+        var dir = DataService.AvatarProfileDir(Settings.ActiveProfile);
+        Directory.CreateDirectory(dir);
+        var ext = Path.GetExtension(sourceFile);
+        if (string.IsNullOrEmpty(ext)) ext = ".png";
+        var target = Path.Combine(dir, s.Id.ToString("N") + ext);
+        File.Copy(sourceFile, target, overwrite: true);
+
+        var old = s.AvatarPath;
+        s.AvatarPath = Path.GetRelativePath(DataService.RootDir, target);
+        if (!string.IsNullOrWhiteSpace(old))
+        {
+            try
+            {
+                var oldFull = Path.Combine(DataService.RootDir, old);
+                if (File.Exists(oldFull) && !string.Equals(oldFull, target, StringComparison.OrdinalIgnoreCase))
+                    File.Delete(oldFull);
+            }
+            catch { /* stale file we cannot remove is harmless */ }
+        }
+        NotifyChanged();
+    }
+
+    private static void DeleteAvatarFile(Student s)
+    {
+        if (string.IsNullOrWhiteSpace(s.AvatarPath)) return;
+        try
+        {
+            var path = Path.Combine(DataService.RootDir, s.AvatarPath);
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch { /* best effort */ }
     }
 
     public void AssignGroup(Student s, Guid? groupId)

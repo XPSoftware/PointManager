@@ -1,0 +1,89 @@
+<UserControl x:Class="PointManager.Views.Controls.ReorderDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Width="420">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                   Text="调整顺序" />
+
+        <TextBlock Grid.Row="1" Margin="0,8,0,0"
+                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                   TextWrapping="Wrap"
+                   Text="学号按列表顺序从 1 自动编号。选中学生后用「上移 / 下移」调整，确定后重新编号。" />
+
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox x:Name="OrderList"
+                     Grid.Column="0"
+                     Height="300"
+                     BorderThickness="1"
+                     BorderBrush="{DynamicResource MaterialDesignDivider}"
+                     SelectionChanged="OrderList_SelectionChanged"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="4,6">
+                            <materialDesign:PackIcon Kind="AccountOutline" Width="20" Height="20"
+                                                     VerticalAlignment="Center"
+                                                     Foreground="{DynamicResource PrimaryHueMidBrush}" />
+                            <TextBlock Text="{Binding DisplayName}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding GroupName}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                <Button x:Name="MoveUpButton"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Click="MoveUp_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ArrowUp" VerticalAlignment="Center" />
+                        <TextBlock Text="上移" Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="MoveDownButton"
+                        Margin="0,8,0,0"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Click="MoveDown_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ArrowDown" VerticalAlignment="Center" />
+                        <TextBlock Text="下移" Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,24,0,0">
+            <Button Content="取消"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Null}" />
+            <Button Content="确定"
+                    Margin="8,0,0,0"
+                    IsDefault="True"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{Binding ItemsSource, ElementName=OrderList}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

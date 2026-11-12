@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:PointManager.Views.Controls"
         xmlns:conv="clr-namespace:PointManager.Converters"
         Title="学生及小组编辑"
-        Height="620" Width="960"
+        Height="660" Width="1080"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource PointManagerWindow}"
         TextElement.FontSize="14">
@@ -24,6 +24,11 @@
             <Setter Property="Padding" Value="10,6" />
             <Setter Property="Height" Value="36" />
             <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+
+        <!-- Destructive / archiving actions use the theme's error red in both light and dark. -->
+        <Style x:Key="DangerFlatButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignValidationErrorBrush}" />
         </Style>
 
         <!-- Tab button that lives inside the colored title bar -->
@@ -256,11 +261,12 @@
                     <!-- ================= 学生 ================= -->
                     <Grid Visibility="{Binding IsChecked, ElementName=TabStudents, Converter={StaticResource BoolToVis}}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="320" MinWidth="240" />
+                            <ColumnDefinition Width="*" MinWidth="380" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" MinWidth="320" />
+                            <ColumnDefinition x:Name="DetailColumn" Width="360" MinWidth="320" />
                         </Grid.ColumnDefinitions>
 
+                        <!-- Left: toolbar + student table -->
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -276,90 +282,201 @@
                                             <TextBlock Text="新建学生" Margin="6,0,0,0" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Style="{StaticResource ToolbarButton}"
-                                            Command="{Binding RemoveStudentCommand}">
+                                    <Button Style="{StaticResource ToolbarButton}" Click="ImportStudents_Click">
                                         <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="AccountRemove" VerticalAlignment="Center" />
-                                            <TextBlock Text="删除" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                            <materialDesign:PackIcon Kind="AccountMultiplePlus" VerticalAlignment="Center" />
+                                            <TextBlock Text="批量导入学生" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource ToolbarButton}" Click="ReorderStudents_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="SwapVertical" VerticalAlignment="Center" />
+                                            <TextBlock Text="调整顺序" Margin="6,0,0,0" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
                             </Border>
 
-                            <ListBox Grid.Row="1" x:Name="StudentList" Margin="0,8,8,0"
-                                     ItemsSource="{Binding Students}"
-                                     SelectedItem="{Binding SelectedStudent}"
-                                     ItemContainerStyle="{StaticResource ListRow}"
-                                     BorderThickness="0" Background="Transparent"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="8,10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <materialDesign:PackIcon Grid.Column="0" Kind="AccountCircleOutline"
-                                                    Width="22" Height="22" VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource PrimaryHueMidBrush}" />
-                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}"
-                                                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
-                                                <TextBlock Text="{Binding GroupName}"
-                                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                           Foreground="{DynamicResource MaterialDesignBodyLight}" />
-                                            </StackPanel>
-                                            <Border Grid.Column="2" VerticalAlignment="Center" CornerRadius="10"
-                                                    Padding="8,2" Background="{DynamicResource SecondaryHueMidBrush}">
-                                                <TextBlock Text="{Binding Points}" FontWeight="Bold"
-                                                           Foreground="{DynamicResource SecondaryHueMidForegroundBrush}" />
-                                            </Border>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <DataGrid Grid.Row="1" x:Name="StudentGrid" Margin="0,8,8,0"
+                                      ItemsSource="{Binding Students}"
+                                      SelectedItem="{Binding SelectedStudent}"
+                                      AutoGenerateColumns="False" CanUserAddRows="False"
+                                      CanUserSortColumns="False" IsReadOnly="True"
+                                      SelectionMode="Single"
+                                      Style="{StaticResource MaterialDesignDataGrid}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="学号" Binding="{Binding Number}" Width="64">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTemplateColumn Header="姓名" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4">
+                                                    <controls:AvatarView Student="{Binding}" Size="26" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding DisplayName}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    <Border Margin="8,0,0,0" Padding="6,1" CornerRadius="8"
+                                                            VerticalAlignment="Center"
+                                                            Background="{DynamicResource MaterialDesignDivider}"
+                                                            Visibility="{Binding IsArchived, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="已存档" FontSize="11"
+                                                                   Foreground="{DynamicResource MaterialDesignBody}" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="70">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="备注" Binding="{Binding Remark}" Width="1.2*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </Grid>
 
                         <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center"
                                       VerticalAlignment="Stretch" Background="Transparent" />
 
                         <!-- Right: student detail form -->
-                        <Border Grid.Column="2" Margin="8,0,0,0">
-                            <StackPanel Margin="8,4" DataContext="{Binding SelectedStudent}">
-                                <TextBlock Text="学生档案" Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                           Margin="0,0,0,16" />
-                                <TextBox Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                         materialDesign:HintAssist.Hint="姓名"
-                                         Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-                                <ComboBox Margin="0,16,0,0"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                          materialDesign:HintAssist.Hint="所属小组"
-                                          ItemsSource="{Binding DataContext.Groups, RelativeSource={RelativeSource AncestorType=Window}}"
-                                          DisplayMemberPath="DisplayName"
-                                          SelectedValuePath="Id"
-                                          SelectedValue="{Binding DataContext.SelectedStudentGroupId, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" />
-                                <Button Margin="0,8,0,0" HorizontalAlignment="Left"
-                                        Style="{StaticResource MaterialDesignFlatButton}"
-                                        Command="{Binding DataContext.RemoveSelectedStudentFromGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="AccountArrowRight" VerticalAlignment="Center" />
-                                        <TextBlock Text="移出小组（设为未分组）" Margin="6,0,0,0" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <materialDesign:Card Margin="0,20,0,0" Padding="16" UniformCornerRadius="8">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Star" Width="28" Height="28"
-                                                                 Foreground="{DynamicResource SecondaryHueMidBrush}" />
-                                        <StackPanel Margin="12,0,0,0">
-                                            <TextBlock Text="当前积分" Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
-                                            <TextBlock Text="{Binding Points}" FontSize="26" FontWeight="Bold" />
+                        <Grid Grid.Column="2" Margin="8,0,0,0">
+                            <TextBlock Text="请选择左侧的学生进行编辑"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       Visibility="{Binding HasSelectedStudent, Converter={StaticResource InvBoolToVis}}" />
+
+                            <materialDesign:Card Padding="20" UniformCornerRadius="8"
+                                                 Visibility="{Binding HasSelectedStudent, Converter={StaticResource BoolToVis}}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <Border Margin="0,0,0,16" Padding="12,8" CornerRadius="6"
+                                            Background="#FFF8E1" TextElement.Foreground="#6D4C00"
+                                            Visibility="{Binding IsSelectedStudentArchived, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="ArchiveOutline" Width="20" Height="20"
+                                                                     VerticalAlignment="Center" />
+                                            <TextBlock Text="该学生已存档，信息不可修改，仅可删除。"
+                                                       Margin="8,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
                                         </StackPanel>
-                                    </StackPanel>
-                                </materialDesign:Card>
-                            </StackPanel>
-                        </Border>
+                                    </Border>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:AvatarView Grid.Column="0" Student="{Binding SelectedStudent}" Size="48"
+                                                             VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" Margin="12,0,0,0"
+                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                 materialDesign:HintAssist.Hint="学号"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding SelectedStudent.Number, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <TextBox Margin="0,12,0,0"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             materialDesign:HintAssist.Hint="姓名"
+                                             IsEnabled="{Binding CanEditSelectedStudent}"
+                                             Text="{Binding SelectedStudent.Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <ComboBox Margin="0,12,0,0"
+                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                              materialDesign:HintAssist.Hint="小组"
+                                              ItemsSource="{Binding GroupOptions}"
+                                              DisplayMemberPath="Name"
+                                              SelectedValuePath="Id"
+                                              IsEnabled="{Binding CanEditSelectedStudent}"
+                                              SelectedValue="{Binding SelectedStudentGroupId}" />
+
+                                    <ComboBox Margin="0,12,0,0"
+                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                              materialDesign:HintAssist.Hint="性别"
+                                              ItemsSource="{Binding GenderOptions}"
+                                              IsEnabled="{Binding CanEditSelectedStudent}"
+                                              SelectedItem="{Binding SelectedStudentGender}" />
+
+                                    <TextBox Margin="0,12,0,0"
+                                             Height="80"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             materialDesign:HintAssist.Hint="备注"
+                                             AcceptsReturn="True" TextWrapping="Wrap"
+                                             VerticalScrollBarVisibility="Auto"
+                                             IsEnabled="{Binding CanEditSelectedStudent}"
+                                             Text="{Binding SelectedStudent.Remark, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Border Margin="0,16,0,0" Padding="0,12,0,0"
+                                            BorderThickness="0,1,0,0"
+                                            BorderBrush="{DynamicResource MaterialDesignDivider}">
+                                        <StackPanel>
+                                            <TextBlock Text="操作"
+                                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                       Margin="0,0,0,8" />
+                                            <WrapPanel>
+                                                <Button Style="{StaticResource ToolbarButton}"
+                                                        Margin="0,0,8,4"
+                                                        Padding="6,6"
+                                                        Click="ChangeAvatar_Click"
+                                                        IsEnabled="{Binding CanEditSelectedStudent}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="ImageOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                                                        <TextBlock Text="修改头像" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Style="{StaticResource DangerFlatButton}"
+                                                        Margin="0,0,8,4"
+                                                        Padding="6,6"
+                                                        Click="ArchiveStudent_Click"
+                                                        IsEnabled="{Binding CanEditSelectedStudent}"
+                                                        Visibility="{Binding IsSelectedStudentArchived, Converter={StaticResource InvBoolToVis}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="ArchiveOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                                                        <TextBlock Text="存档学生" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Style="{StaticResource ToolbarButton}"
+                                                        Margin="0,0,8,4"
+                                                        Padding="6,6"
+                                                        Click="UnarchiveStudent_Click"
+                                                        Visibility="{Binding IsSelectedStudentArchived, Converter={StaticResource BoolToVis}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="ArchiveOffOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                                                        <TextBlock Text="取消存档" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Style="{StaticResource DangerFlatButton}"
+                                                        Margin="0,0,8,4"
+                                                        Padding="6,6"
+                                                        Click="RemoveStudent_Click"
+                                                        IsEnabled="{Binding HasSelectedStudent}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="DeleteOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                                                        <TextBlock Text="删除学生" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                </ScrollViewer>
+                            </materialDesign:Card>
+                        </Grid>
                     </Grid>
                 </Grid>
 
