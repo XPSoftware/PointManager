@@ -77,6 +77,13 @@ public partial class AppSettings : ObservableObject
         set => SetProperty(ref _maxHistoryRecords, Math.Max(0, value));
     }
 
+    private bool _isAutoVerifyEnabled = true;
+    public bool IsAutoVerifyEnabled
+    {
+        get => _isAutoVerifyEnabled;
+        set => SetProperty(ref _isAutoVerifyEnabled, value);
+    }
+
     // Recently picked colors as "#RRGGBB", most recent first; shared by both color pickers.
     public ObservableCollection<string> RecentColors { get; set; } = new();
 

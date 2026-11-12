@@ -18,7 +18,7 @@ public partial class TotalCheckDialog : Window
         MismatchList.ItemsSource = result.Mismatches;
         SummaryText.Text = $"共 {result.Mismatches.Count} 名学生的总分与历史记录合计不一致。";
         CaptionText.Text = $"合计基于当前保留的 {result.RecordCount} 条历史记录；" +
-                           "历史超出上限被裁剪后，合计仅覆盖保留范围内的记录。";
+                           "接近上限时旧记录会按学生合并（合计不变），超出上限被裁剪后合计仅覆盖保留范围内的记录。";
 
         if (result.OrphanRecordCount > 0)
         {

@@ -276,8 +276,41 @@ public sealed class Store
     {
         if (Settings.MaxHistoryRecords <= 0) return;
         var max = Math.Max(50, Settings.MaxHistoryRecords);
+        MergeOldRecords(max);
         while (Records.Count > max)
             Records.RemoveAt(Records.Count - 1);
+    }
+
+    // Near the cap, fold the oldest records into one summary per student so the
+    // retained history still sums to each student's total.
+    private void MergeOldRecords(int max)
+    {
+        if (Records.Count < max * 9 / 10) return;
+        var keep = max / 2;
+        var old = Records.Skip(keep).ToList();
+        var summaries = old.GroupBy(r => r.StudentId)
+            .Select(g => new
+            {
+                StudentId = g.Key,
+                Delta = g.Sum(r => r.Delta),
+                Name = g.First().StudentName,
+                Group = g.First().GroupName,
+                Time = g.Max(r => r.Time),
+            })
+            .Where(x => x.Delta != 0)
+            .Select(x => new PointRecord
+            {
+                StudentId = x.StudentId,
+                StudentName = x.Name,
+                GroupName = x.Group,
+                Delta = x.Delta,
+                Reason = "历史合并",
+                Time = x.Time,
+            })
+            .OrderByDescending(r => r.Time)
+            .ToList();
+        foreach (var r in old) Records.Remove(r);
+        foreach (var r in summaries) Records.Add(r);
     }
 
     public void ClearHistory()

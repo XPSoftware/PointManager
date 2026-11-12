@@ -166,6 +166,12 @@
                             <TextBlock Text="存储" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
+                    <RadioButton x:Name="TabSafety" Style="{StaticResource SideTab}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ShieldCheckOutline" Width="18" Height="18" VerticalAlignment="Center" />
+                            <TextBlock Text="安全" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
                     <RadioButton x:Name="TabAbout" Style="{StaticResource SideTab}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" VerticalAlignment="Center" />
@@ -463,6 +469,14 @@
                             </StackPanel>
                         </materialDesign:Card>
 
+                        <!-- ===== 积分 ===== -->
+                        <StackPanel Orientation="Horizontal" Margin="5,14,5,8">
+                            <materialDesign:PackIcon Kind="PlusMinusVariant" Width="20" Height="20"
+                                                     VerticalAlignment="Center" />
+                            <TextBlock Text="积分" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       FontSize="15" FontWeight="Medium" />
+                        </StackPanel>
+
                         <controls:SettingsCard Margin="5" IconGlyph="History" Header="积分记录"
                                                Description="{Binding HistoryHint}" HasSwitcher="False" />
 
@@ -490,6 +504,13 @@
                                         Foreground="#E53935" BorderBrush="#E53935" Click="ResetPoints_Click" />
                             </controls:SettingsCard.Switcher>
                         </controls:SettingsCard>
+                    </StackPanel>
+
+                    <!-- ===== 安全 ===== -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabSafety, Converter={StaticResource BoolToVis}}">
+                        <controls:SettingsCard Margin="5" IconGlyph="ClipboardCheckOutline" Header="启动时自动校验总分"
+                                               Description="启动时自动比对学生总分与历史记录合计，发现不一致时弹窗提示，可按历史记录修正。"
+                                               IsOn="{Binding Settings.IsAutoVerifyEnabled, Mode=TwoWay}" />
                     </StackPanel>
 
                     <!-- ===== 关于 ===== -->
