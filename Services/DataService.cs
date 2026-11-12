@@ -63,6 +63,7 @@ public static class DataService
     public const string HistoryFolderName = "Histories";
     public const string AvatarFolderName = "Avatars";
     public const string BackupFolderName = "Backup";
+    public const string BackupsFolderName = "Backups";
     public const string LegacyFileName = "data.json";
 
     // Fixed diagnostic/pointer folder. crash.log must stay reachable even when the data
@@ -96,6 +97,8 @@ public static class DataService
     public static string AvatarDir => Path.Combine(RootDir, AvatarFolderName);
 
     public static string BackupDir => Path.Combine(RootDir, BackupFolderName);
+
+    public static string BackupsDir => Path.Combine(RootDir, BackupsFolderName);
 
     public static string LegacyFilePath => Path.Combine(RootDir, LegacyFileName);
 
@@ -629,7 +632,7 @@ public static class DataService
             File.Copy(source, Path.Combine(targetRoot, file), overwrite: true);
         }
 
-        foreach (var folder in new[] { ProfileFolderName, HistoryFolderName, AvatarFolderName, BackupFolderName })
+        foreach (var folder in new[] { ProfileFolderName, HistoryFolderName, AvatarFolderName, BackupFolderName, BackupsFolderName })
         {
             var sourceDir = Path.Combine(sourceRoot, folder);
             if (!Directory.Exists(sourceDir)) continue;

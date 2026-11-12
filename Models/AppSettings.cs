@@ -97,4 +97,33 @@ public partial class AppSettings : ObservableObject
         get => _activeProfile;
         set => SetProperty(ref _activeProfile, value);
     }
+
+    private bool _isAutoBackupEnabled = true;
+    public bool IsAutoBackupEnabled
+    {
+        get => _isAutoBackupEnabled;
+        set => SetProperty(ref _isAutoBackupEnabled, value);
+    }
+
+    private int _autoBackupIntervalDays = 7;
+    public int AutoBackupIntervalDays
+    {
+        get => _autoBackupIntervalDays;
+        set => SetProperty(ref _autoBackupIntervalDays, Math.Max(1, value));
+    }
+
+    // 0 means unlimited; otherwise the oldest auto backups are deleted beyond this count.
+    private int _autoBackupLimit = 16;
+    public int AutoBackupLimit
+    {
+        get => _autoBackupLimit;
+        set => SetProperty(ref _autoBackupLimit, Math.Max(0, value));
+    }
+
+    private DateTime? _lastAutoBackupTime;
+    public DateTime? LastAutoBackupTime
+    {
+        get => _lastAutoBackupTime;
+        set => SetProperty(ref _lastAutoBackupTime, value);
+    }
 }

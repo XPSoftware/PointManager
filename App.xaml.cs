@@ -50,6 +50,7 @@ public partial class App : Application
         Store.Instance.Load();
         Store.Instance.DataChanged += () => Store.Instance.Save();        ThemeService.Apply(Store.Instance.Settings);
         ThemeService.MonitorSystemTheme(Store.Instance.Settings);
+        BackupService.StartAutoBackup();
 
         CreateTrayIcon();
 

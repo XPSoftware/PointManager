@@ -103,6 +103,10 @@ public partial class SettingsViewModel : ObservableObject
                 OnPropertyChanged(nameof(ProfilePathHint));
                 OnPropertyChanged(nameof(HistoryPathHint));
             }
+            if (e.PropertyName == nameof(AppSettings.LastAutoBackupTime))
+                OnPropertyChanged(nameof(LastAutoBackupText));
+            if (e.PropertyName == nameof(AppSettings.AutoBackupLimit))
+                BackupService.PruneAutoBackups(Settings.AutoBackupLimit);
             _store.Save();
         };
     }
@@ -298,6 +302,65 @@ public partial class SettingsViewModel : ObservableObject
         {
             System.Windows.MessageBox.Show($"无法打开 {DataService.RootDir}\n{ex.Message}",
                 "打开所在文件夹", System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    // ---- 备份 -------------------------------------------------------------------
+
+    [ObservableProperty]
+    private bool _isBackingUp;
+
+    [ObservableProperty]
+    private bool _isBackupFinished;
+
+    public bool IsNotBackingUp => !IsBackingUp;
+
+    partial void OnIsBackingUpChanged(bool value) => OnPropertyChanged(nameof(IsNotBackingUp));
+
+    public string LastAutoBackupText =>
+        Settings.LastAutoBackupTime?.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+        ?? "尚未自动备份";
+
+    [RelayCommand]
+    private async Task BackupNow()
+    {
+        if (IsBackingUp) return;
+        IsBackingUp = true;
+        IsBackupFinished = false;
+        try
+        {
+            _store.Save();
+            await Task.Run(() => BackupService.CreateBackup(auto: false));
+            IsBackupFinished = true;
+        }
+        catch (System.Exception ex)
+        {
+            System.Windows.MessageBox.Show($"备份失败：\n{ex.Message}", "手动备份",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+        finally
+        {
+            IsBackingUp = false;
+        }
+    }
+
+    [RelayCommand]
+    private void OpenBackupFolder()
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(DataService.BackupsDir);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = DataService.BackupsDir,
+                UseShellExecute = true,
+            });
+        }
+        catch (System.Exception ex)
+        {
+            System.Windows.MessageBox.Show($"无法打开 {DataService.BackupsDir}\n{ex.Message}",
+                "查看备份文件", System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Warning);
         }
     }
